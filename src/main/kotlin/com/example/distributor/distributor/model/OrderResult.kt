@@ -9,13 +9,13 @@ data class OrderResult(
     val orderRaw: Order?,
 
     @Expose
-    var result: String,
+    var status: OrderStatus,
 
     @Expose
     val signature: String,
 
     val exchange: String,
 
-    val rotutingKey: String
+    val routingKey: String
 
 )

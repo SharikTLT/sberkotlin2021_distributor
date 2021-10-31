@@ -25,7 +25,6 @@ class SampleProducer {
     @Autowired
     lateinit var rabbit : RabbitTemplate
 
-
     @Value("\${sample.producer.enabled:false}")
     var enabled: Boolean = false
 

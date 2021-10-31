@@ -1,0 +1,1 @@
+docker image push shariktlt/sber_kotlin_school_2021_messaging_distributor:1.0.0-SNAPSHOT

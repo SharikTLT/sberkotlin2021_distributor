@@ -4,6 +4,7 @@ import com.example.distributor.config.DistributorConfig
 import com.example.distributor.config.ListenerAdapter
 import com.example.distributor.distributor.model.Order
 import com.example.distributor.distributor.model.OrderResult
+import com.example.distributor.distributor.model.OrderStatus
 import com.google.gson.Gson
 import org.slf4j.LoggerFactory
 import org.springframework.amqp.core.Message
@@ -33,21 +34,22 @@ class DistributorListenerAdapter: ListenerAdapter {
     lateinit var checker: Checker
 
     override fun receive(message: Message) {
-        log.info("Received raw: {}", message)
+        log.info("Received raw message: {}", message)
         try{
             val msg_str = String(message.body)
             val order = gson.fromJson(msg_str, Order::class.java)
-            log.info("Received: {}", order)
-            notifier.register(buildResult(message, order.uid, "Created", order))
+            log.info("Received order: {}", order)
+            notifier.register(buildResult(message, order.id, OrderStatus.CREATED, order))
         }catch (e: Exception) {
-            notifier.register(buildResult(message, "errors", e.message!!, null))
+            log.error(e.message, e)
+            notifier.register(buildResult(message, "errors", OrderStatus.ERROR, null))
         }
     }
 
     private fun buildResult(
         message: Message,
         uid: String,
-        result: String,
+        result: OrderStatus,
         order: Order?
     ): OrderResult {
         val rotutingKey = extractHeader(message, "Notify-RoutingKey", "distribution.updates.unknown")
@@ -67,7 +69,7 @@ class DistributorListenerAdapter: ListenerAdapter {
         if(order == null){
             return checker.hash("null"+key)
         }else{
-            return checker.hash(order.uid+key)
+            return checker.hash(order.id+key)
         }
 
     }

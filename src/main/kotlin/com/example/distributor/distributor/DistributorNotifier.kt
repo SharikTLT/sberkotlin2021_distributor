@@ -2,6 +2,7 @@ package com.example.distributor.distributor
 
 import com.example.distributor.config.DistributorConfig
 import com.example.distributor.distributor.model.OrderResult
+import com.example.distributor.distributor.model.OrderStatus
 import com.google.gson.GsonBuilder
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -39,21 +40,19 @@ class DistributorNotifier {
             while (true) {
                 val order: OrderResult? = queue.poll()
                 if (order != null) {
-                    log.info("Process order: {}", order)
+                    log.info("Notify order: {}", order)
                     rabbit.convertAndSend(
                         order.exchange,
-                        order.rotutingKey + "." + order.orderId,
+                        order.routingKey + "." + order.orderId,
                         gson.toJson(order)
                     )
-                    if (order.result == "Created") {
-                        order.result = "Delivered"
+                    if (order.status == OrderStatus.CREATED) {
+                        order.status = OrderStatus.DELIVERED
                         register(order)
                     }
-                } else {
-                    log.info("Empty queue")
                 }
 
-                Thread.sleep(100)
+                Thread.sleep(500)
             }
         }
     }
