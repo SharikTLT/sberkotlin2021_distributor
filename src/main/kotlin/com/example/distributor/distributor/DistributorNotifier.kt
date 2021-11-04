@@ -45,7 +45,11 @@ class DistributorNotifier {
                         order.exchange,
                         order.routingKey + "." + order.orderId,
                         gson.toJson(order)
-                    )
+                    ) { message ->
+                        message.messageProperties.contentType = "application/json"
+                        message
+                    }
+
                     if (order.status == OrderStatus.CREATED) {
                         order.status = OrderStatus.DELIVERED
                         register(order)
